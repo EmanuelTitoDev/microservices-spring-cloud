@@ -1,0 +1,138 @@
+name: microservices
+
+services:
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
+
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    image: config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      GIT_URL: ${GIT_URL}
+      GIT_USER: ${GIT_USER}
+      GIT_PASSWORD: ${GIT_PASSWORD}
+    depends_on:
+      - eureka-server
+    networks:
+      - microservices-network
+
+
+  products-service:
+    build:
+      context: ./products-service
+      dockerfile: Dockerfile
+    image: products-service:latest
+    container_name: products-service
+    ports:
+      - "8081:8081"
+
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: ${DB_PORT}
+      DB_NAME: products_db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - config-server
+      - eureka-server
+
+    networks:
+      - microservices-network
+
+
+  shopping-cart-service:
+    build:
+      context: ./shopping-cart-service
+      dockerfile: Dockerfile
+    image: shopping-cart-service:latest
+    container_name: shopping-cart-service
+    ports:
+      - "8082:8082"
+
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: ${DB_PORT}
+      DB_NAME: shopping_cart_db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - config-server
+      - eureka-server
+      - products-service
+
+    networks:
+      - microservices-network
+
+
+  sales-service:
+    build:
+      context: ./sales-service
+      dockerfile: Dockerfile
+    image: sales-service:latest
+    container_name: sales-service
+    ports:
+      - "8083:8083"
+
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: ${DB_PORT}
+      DB_NAME: sales_db
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - config-server
+      - eureka-server
+      - shopping-cart-service
+
+    networks:
+      - microservices-network
+
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    depends_on:
+      - config-server
+      - eureka-server
+
+    networks:
+      - microservices-network
+
+
+networks:
+  microservices-network:
