@@ -1,0 +1,55 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:shoppings_cart_db};encrypt=false;trustServerCertificate=true
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,refresh
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      products-service:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+        ignore-exceptions:
+          - com.emanueltito.shopping_cart_service.exception.ResourceNotFoundException
+          - feign.FeignException$NotFound
+  retry:
+    instances:
+      products-service:
+        max-attempts: 3
+        wait-duration: 500ms
+        ignore-exceptions:
+          - com.emanueltito.shopping_cart_service.exception.ResourceNotFoundException
+          - feign.FeignException$NotFound
