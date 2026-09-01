@@ -1,0 +1,669 @@
+{
+  "info": {
+    "name": "Microservices API",
+    "description": "Postman Collection for Products, Shopping Cart, and Sales microservices with automatic tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gateway_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "product_code",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cart_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sale_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Response is an array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/products",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "if(pm.response.code === 201) { var res = pm.response.json(); pm.collectionVariables.set(\"product_id\", res.id); pm.collectionVariables.set(\"product_code\", res.code); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"PROD999999\",\n    \"name\": \"Test Product\",\n    \"brand\": \"BrandX\",\n    \"individualPrice\": 99.99\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/products",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product (Negative - Invalid Body)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"PROD\",\n    \"name\": \"\",\n    \"brand\": \"BrandX\",\n    \"individualPrice\": -10\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/products",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Has ID\", function () { pm.expect(pm.response.json()).to.have.property('id'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/products/{{product_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{product_id}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/products/code/{{product_code}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "code",
+                "{{product_code}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Products By Codes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\"{{product_code}}\"]"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/products/by-codes",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "by-codes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"PROD999999\",\n    \"name\": \"Updated Test Product\",\n    \"brand\": \"BrandY\",\n    \"individualPrice\": 149.99\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/products/{{product_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{product_id}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By ID (Negative - Not Found)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/products/999999",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "999999"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shopping Cart",
+      "item": [
+        {
+          "name": "Create Shopping Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "if(pm.response.code === 201) { pm.collectionVariables.set(\"cart_id\", pm.response.json().id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"items\": [\n        {\n            \"productCode\": \"{{product_code}}\",\n            \"quantity\": 2\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/cart",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "cart"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Shopping Cart (Negative - Invalid quantity)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"items\": [\n        {\n            \"productCode\": \"{{product_code}}\",\n            \"quantity\": -5\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/cart",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "cart"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Carts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Response is an array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/cart",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "cart"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Cart By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Has ID\", function () { pm.expect(pm.response.json()).to.have.property('id'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/cart/{{cart_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "{{cart_id}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales",
+      "item": [
+        {
+          "name": "Create Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "if(pm.response.code === 201) { pm.collectionVariables.set(\"sale_id\", pm.response.json().id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"idCart\": {{cart_id}}\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/sales",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "sales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Sale (Negative - Missing cart)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"idCart\": -1\n}"
+            },
+            "url": {
+              "raw": "{{gateway_url}}/api/sales",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "sales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Sales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Response is an array\", function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/sales",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "sales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Sale By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Has ID\", function () { pm.expect(pm.response.json()).to.have.property('id'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{gateway_url}}/api/sales/{{sale_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{sale_id}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Delete Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{gateway_url}}/api/sales/{{sale_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{sale_id}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{gateway_url}}/api/cart/{{cart_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "{{cart_id}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{gateway_url}}/api/products/{{product_id}}",
+              "host": [
+                "{{gateway_url}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{product_id}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
