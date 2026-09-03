@@ -86,8 +86,7 @@ The project is orchestrated to be fully brought up with a single command.
 ```bash
 docker compose up -d --build
 ```
-> **Note:** Due to the `depends_on` rule, Docker will start the `config-server` and `eureka-server` before the business services to prevent connection failures.
-
+> **Note:** The orchestration uses `depends_on` with `service_healthy` conditions and **healthchecks**. Docker will wait for `config-server` and `eureka-server` to be fully initialized and responsive before starting the business services, preventing any connection failures.
 ## 📚 API Documentation (OpenAPI / Swagger)
 
 Interactive REST layer documentation is generated using native **Springdoc OpenAPI (v3.1.0)**. You can access the Swagger consoles locally via:
