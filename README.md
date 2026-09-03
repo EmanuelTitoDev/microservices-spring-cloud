@@ -79,6 +79,13 @@ graph TD
 3. **Database Initialization (Optional):**
    * Navigate to the `database_scripts/` folder and run the `.sql` scripts inside your database manager (SSMS / DBeaver) after the first startup (to populate data).
 
+## 💻 Running Locally (IDE)
+
+If you prefer to run the microservices locally via your IDE (like IntelliJ IDEA) instead of Docker:
+1. Ensure your remote Git Config Repository contains the default local variables (e.g., `${DB_USER:sa}`).
+2. In your IDE, configure the **Environment Variables** for the `config-server` run configuration (`GIT_URL`, `GIT_USER`, `GIT_PASSWORD`) so it can fetch the configuration from GitHub.
+3. The rest of the microservices will automatically start using the default local variables provided by the `config-server`. Alternatively, you can use the **EnvFile** plugin to inject the `.env` file into each microservice's run configuration.
+
 ## 🐳 Running with Docker Compose
 
 The project is orchestrated to be fully brought up with a single command.
